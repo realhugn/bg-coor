@@ -56,13 +56,13 @@ async fn main() {
 ## Roadmap
 Future development plans:
 
-<input disabled="" type="checkbox"> Persistent storage backends (Redis, PostgreSQL) </br>
-<input disabled="" type="checkbox"> Distributed broker implementations</br>
-<input disabled="" type="checkbox"> Task scheduling with cron expressions</br>
-<input disabled="" type="checkbox"> Task dependencies and workflow support</br>
-<input disabled="" type="checkbox"> Web interface for task monitoring</br>
-<input disabled="" type="checkbox"> Metrics and monitoring</br>
-<input disabled="" type="checkbox"> Task result serialization formats</br>
-<input disabled="" type="checkbox"> Dead letter queue for failed tasks</br>
-<input disabled="" type="checkbox"> Task prioritization</br>
-<input disabled="" type="checkbox"> Rate limiting and backpressure</br>
+- [ ] Persistent storage backends (Redis, PostgreSQL)
+- [ ] Distributed broker implementations
+- [ ] Task scheduling with cron expressions
+- [ ] Task dependencies and workflow support
+- [ ] Web interface for task monitoring
+- [ ] Metrics and monitoring
+- [ ] Task result serialization formats
+- [ ] Dead letter queue for failed tasks
+- [ ] Task prioritization
+- [ ] Rate limiting and backpressure
