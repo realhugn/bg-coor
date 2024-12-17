@@ -25,4 +25,7 @@ pub enum TaskError {
 
     #[error("Task registry is locked: {0}")]
     RegistryLocked(String),
+
+    #[error("Shutdown error: {0}")]
+    ShutdownError(String),
 }
