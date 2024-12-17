@@ -22,12 +22,12 @@ impl MemoryBroker {
 
 #[async_trait]
 impl Broker for MemoryBroker {
-    async fn push(&self, task: Task) -> Result<(), TaskError> {
+    async fn push(&self, task: &Task) -> Result<(), TaskError> {
         let id = task.id();
         let mut tasks = self.tasks.lock().await;
         let mut queue = self.queue.lock().await;
 
-        tasks.insert(id, task);
+        tasks.insert(id, task.clone());
         queue.push(id);
         Ok(())
     }
