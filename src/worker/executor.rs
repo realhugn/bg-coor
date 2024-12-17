@@ -1,10 +1,7 @@
-use std::collections::HashMap;
 use std::sync::Arc;
 use async_trait::async_trait;
-use serde::Deserialize;
-use serde_json::Value;
 
-use crate::core::{Task, TaskStatus, TaskError};
+use crate::core::{Task, TaskStatus, TaskError, TaskSignature};
 use crate::broker::traits::Broker;
 use crate::storage::Storage;
 
@@ -14,13 +11,6 @@ use super::registry::{TaskHandler, TaskRegistry};
 pub trait Middleware: Send + Sync {
     async fn before_execution(&self, task: &Task) -> Result<(), TaskError>;
     async fn after_execution(&self, task: &Task) -> Result<(), TaskError>;
-}
-
-#[derive(Debug, Deserialize)]
-struct TaskSignature {
-    name: String,
-    args: Vec<Value>,
-    pub kwargs: HashMap<String, serde_json::Value>,
 }
 
 pub struct Executor {
@@ -49,14 +39,14 @@ impl Executor {
     }
 
     pub async fn execute_task(&self, mut task: Task) -> Result<(), TaskError> {
-        for middleware in &self.middlewares {
-            middleware.before_execution(&task).await?;
-        }
-
         task.set_status(TaskStatus::Running);
         self.storage.update_task(&task).await?;
-        let handler = self.registry.get(&task.name())
-            .ok_or_else(|| TaskError::HandlerNotFound(task.name().to_owned()))?;
+        let handler = match self.registry.get(&task.name())? {
+            Some(h) => h,
+            None => {
+                return Err(TaskError::HandlerNotFound(task.name().to_string()))
+            },
+        };
 
         let result = self.process_task(&task, handler.as_ref()).await;
         match result {

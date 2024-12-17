@@ -22,4 +22,7 @@ pub enum TaskError {
 
     #[error("Invalid task signature")]
     InvalidSignature,
+
+    #[error("Task registry is locked: {0}")]
+    RegistryLocked(String),
 }

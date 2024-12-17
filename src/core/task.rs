@@ -1,7 +1,9 @@
 use core::fmt;
+use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -91,5 +93,22 @@ impl Task {
 impl fmt::Display for Task {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "Task({}, {})", self.id, self.name)
+    }
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+pub struct TaskSignature {
+    pub name: String,
+    pub args: Vec<Value>,
+    pub kwargs: HashMap<String, serde_json::Value>,
+}
+
+impl TaskSignature {
+    pub fn new(name: String, args: Vec<Value>, kwargs: HashMap<String, serde_json::Value>) -> Self {
+        TaskSignature { name, args, kwargs }
+    }
+
+    pub fn to_bytes(&self) -> Vec<u8> {
+        serde_json::to_vec(self).unwrap()
     }
 }

@@ -21,6 +21,7 @@ impl WorkerPool {
     pub fn new(
         broker: Arc<dyn Broker>, 
         storage: Arc<dyn Storage>,
+        registry: Arc<TaskRegistry>,
         concurrency: usize
     ) -> Self {
         let (shutdown_tx, shutdown_rx) = mpsc::channel(1);
@@ -29,7 +30,7 @@ impl WorkerPool {
             workers: Vec::new(),
             broker,
             storage,
-            registry: Arc::new(TaskRegistry::new()),
+            registry,
             concurrency,
             shutdown_tx,
             shutdown_rx: Arc::new(Mutex::new(shutdown_rx)),
