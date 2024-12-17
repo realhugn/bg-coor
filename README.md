@@ -55,7 +55,7 @@ async fn main() {
 ```
 ## Roadmap
 Future development plans:
-
+- [ ] Implement a task manager wrapper to simplify lib usage.
 - [ ] Persistent storage backends (Redis, PostgreSQL)
 - [ ] Distributed broker implementations
 - [ ] Task scheduling with cron expressions
