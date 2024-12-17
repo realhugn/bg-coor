@@ -64,6 +64,7 @@ impl WorkerPool {
                 let mut shutdown_rx = shutdown_rx.lock().await;
                 tokio::select! {
                     _ =  shutdown_rx.recv() => {
+                        println!("Worker is shutting down");
                         info!("Worker is shutting down");
                         break;
                     }
