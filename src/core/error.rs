@@ -13,4 +13,13 @@ pub enum TaskError {
     
     #[error("Maximum retries exceeded")]
     MaxRetriesExceeded,
+
+    #[error("Task validation failed: {0}")]
+    ValidationError(String),
+
+    #[error("Task handler not found: {0}")]
+    HandlerNotFound(String),
+
+    #[error("Invalid task signature")]
+    InvalidSignature,
 }

@@ -13,6 +13,7 @@ pub struct Task {
     pub(crate) created_at: DateTime<Utc>,
     pub(crate) retries: u32,
     pub(crate) max_retries: u32,
+    pub(crate) result: Option<Vec<u8>>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -20,6 +21,7 @@ pub enum TaskStatus {
     Pending,
     Running,
     Completed,
+    Cancelled,
     Failed(String),
 }
 
@@ -33,6 +35,7 @@ impl Task {
             created_at: Utc::now(),
             retries: 0,
             max_retries,
+            result: None,
         }
     }
 
@@ -66,6 +69,22 @@ impl Task {
 
     pub fn set_status(&mut self, status: TaskStatus) {
         self.status = status;
+    }
+
+    pub fn is_ready(&self) -> bool {
+        self.status == TaskStatus::Pending
+    }
+
+    pub fn increment_retries(&mut self) {
+        self.retries += 1;
+    }
+
+    pub fn get_result(&self) -> Option<&[u8]> {
+        self.result.as_deref()
+    }
+
+    pub fn set_result(&mut self, result: Vec<u8>) {
+        self.result = Some(result);
     }
 }
 
