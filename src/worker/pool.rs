@@ -1,6 +1,6 @@
-use std::{error::Error, sync::Arc};
+use std::{error::Error, sync::Arc, time::Duration};
 
-use tokio::{sync::{mpsc, Mutex}, task::JoinHandle};
+use tokio::{sync::broadcast, task::JoinHandle};
 use tracing::{error, info};
 
 use crate::{broker::traits::Broker, core::TaskError, storage::Storage};
@@ -13,8 +13,7 @@ pub struct WorkerPool {
     storage: Arc<dyn Storage>,
     registry: Arc<TaskRegistry>,
     concurrency: usize,
-    shutdown_tx: mpsc::Sender<()>,
-    shutdown_rx: Arc<Mutex<mpsc::Receiver<()>>>,
+    shutdown_tx: broadcast::Sender<()>,
 }
 
 impl WorkerPool {
@@ -24,7 +23,7 @@ impl WorkerPool {
         registry: Arc<TaskRegistry>,
         concurrency: usize
     ) -> Self {
-        let (shutdown_tx, shutdown_rx) = mpsc::channel(1);
+        let (shutdown_tx, _) = broadcast::channel(concurrency);
 
         Self {
             workers: Vec::new(),
@@ -33,7 +32,6 @@ impl WorkerPool {
             registry,
             concurrency,
             shutdown_tx,
-            shutdown_rx: Arc::new(Mutex::new(shutdown_rx)),
         }
     }
 
@@ -57,14 +55,12 @@ impl WorkerPool {
         storage: Arc<dyn Storage>,
         registry: Arc<TaskRegistry>,
     ) -> JoinHandle<()> {
-        let shutdown_rx = Arc::clone(&self.shutdown_rx);
+        let mut shutdown_rx = self.shutdown_tx.subscribe();
 
         tokio::spawn(async move {
             loop {
-                let mut shutdown_rx = shutdown_rx.lock().await;
                 tokio::select! {
-                    _ =  shutdown_rx.recv() => {
-                        println!("Worker is shutting down");
+                    Ok(_) = shutdown_rx.recv() => {
                         info!("Worker is shutting down");
                         break;
                     }
@@ -98,13 +94,24 @@ impl WorkerPool {
     /// Graceful shutdown of worker pool
     pub async fn shutdown(&mut self) -> Result<(), Box<dyn Error>>{
         // Send shutdown signal to all workers
-        self.shutdown_tx.send(()).await?;
+        let _ = self.shutdown_tx.send(());
+
+        let timeout = Duration::from_secs(10);
 
         // Wait for all workers to complete
-        for worker in self.workers.drain(..) {
-            worker.await?;
-        }
+        let shutdown_future = async {
+            for worker in self.workers.drain(..) {
+                worker.await?;
+            }
+            Ok::<_, Box<dyn Error>>(())
+        };
 
-        Ok(())
+        tokio::select! {
+            result = shutdown_future => result,
+            _ = tokio::time::sleep(timeout) => {
+                error!("Worker pool shutdown timed out");
+                Err("Shutdown timeout".into())
+            }
+        }
     }
 }
