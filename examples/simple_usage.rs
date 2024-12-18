@@ -59,12 +59,14 @@ async fn main() -> Result<(), TaskError> {
         match task_result {
             Some(task) => {
                 if task.is_finished() {
-                    println!("Task result: {:?}", task.get_result());
+                    let string_result = task.get_result()
+                        .map(|r| String::from_utf8_lossy(r).to_string())
+                        .unwrap_or_else(|| "No result".to_string());
+                    println!("Task result: {}",string_result);
                     break;
                 }
             }
             None => {
-                println!("Task not found, retrying...");
                 sleep(Duration::from_secs(1)).await;
             }
         }
