@@ -28,4 +28,7 @@ pub enum TaskError {
 
     #[error("Shutdown error: {0}")]
     ShutdownError(String),
+
+    #[error("Invalid argument: {0}")]
+    InvalidArgument(String),
 }

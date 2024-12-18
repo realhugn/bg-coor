@@ -1,5 +1,7 @@
 use std::sync::Arc;
 
+use uuid::Uuid;
+
 use crate::broker::memory::MemoryBroker;
 use crate::broker::traits::Broker; 
 use crate::core::{Task, TaskError};
@@ -48,9 +50,11 @@ impl TaskManager {
         self.registry.register(name, handler)
     }
 
-    pub async fn enqueue_task(&self, name: &str, payload: Vec<u8>, max_retries: u32) -> Result<(), TaskError> {
+    pub async fn enqueue_task(&self, name: &str, payload: Vec<u8>, max_retries: u32) -> Result<Uuid, TaskError> {
         let task = Task::new(name.to_string(), payload, max_retries);
-        self.broker.push(&task).await
+        self.broker.push(&task).await?;
+
+        Ok(task.id)
     }
 
     pub async fn list_tasks(&self) -> Result<Vec<Task>, TaskError> {

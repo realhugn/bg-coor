@@ -77,6 +77,14 @@ impl Task {
         self.status == TaskStatus::Pending
     }
 
+    pub fn is_running(&self) -> bool {
+        self.status == TaskStatus::Running
+    }
+
+    pub fn is_finished(&self) -> bool {
+        matches!(self.status, TaskStatus::Completed | TaskStatus::Cancelled | TaskStatus::Failed(_))
+    }
+
     pub fn increment_retries(&mut self) {
         self.retries += 1;
     }
