@@ -44,22 +44,22 @@ impl TaskHandler for AddTask {
         _kwargs: HashMap<String, Value>,
     ) -> Result<Vec<u8>, TaskError> {
         // Parse arguments
-        let a = args.get(0)
-            .and_then(|v| v.as_i64())
-            .ok_or_else(|| TaskError::InvalidArgument("First argument missing or invalid".into()))?;
-        
-        let b = args.get(1)
-            .and_then(|v| v.as_i64())
-            .ok_or_else(|| TaskError::InvalidArgument("Second argument missing or invalid".into()))?;
+        let a = args.get(0).and_then(|v| v.as_i64()).ok_or_else(|| {
+            TaskError::InvalidArgument("First argument missing or invalid".into())
+        })?;
+
+        let b = args.get(1).and_then(|v| v.as_i64()).ok_or_else(|| {
+            TaskError::InvalidArgument("Second argument missing or invalid".into())
+        })?;
 
         // Simulate long running task
         println!("Starting addition of {} + {}", a, b);
         sleep(Duration::from_secs(3)).await;
-        
+
         // Perform addition
         let result = a + b;
         println!("Result: {}", result);
-        
+
         // Return result as bytes
         Ok(result.to_string().into_bytes())
     }
@@ -67,20 +67,20 @@ impl TaskHandler for AddTask {
 
 #[tokio::main]
 async fn main() -> Result<(), TaskError> {
-    let mut manager = TaskManager::new(1);
+    let mut manager = TaskManager::new(2);
     manager.register_handler("add", AddTask)?;
 
     manager.start().await?;
 
     // Create task signature
-    let signature = serde_json::to_vec(&bg_coor::core::TaskSignature {
+    let signature = bg_coor::core::TaskSignature {
         name: "add".to_string(),
         args: vec![json!(5), json!(3)],
         kwargs: HashMap::new(),
-    })?;
+    };
 
     // Enqueue the task
-    let task_id = manager.enqueue_task("add", signature, 3).await?;
+    let task_id = manager.enqueue_task(signature, 3).await?;
     println!("Task ID: {}", task_id);
 
     loop {
@@ -88,10 +88,11 @@ async fn main() -> Result<(), TaskError> {
         match task_result {
             Some(task) => {
                 if task.is_finished() {
-                    let string_result = task.get_result()
+                    let string_result = task
+                        .get_result()
                         .map(|r| String::from_utf8_lossy(r).to_string())
                         .unwrap_or_else(|| "No result".to_string());
-                    println!("Task result: {}",string_result);
+                    println!("Task result: {}", string_result);
                     break;
                 }
             }
@@ -100,7 +101,7 @@ async fn main() -> Result<(), TaskError> {
             }
         }
     }
-    
+
     manager.shutdown().await
 }
 ```
