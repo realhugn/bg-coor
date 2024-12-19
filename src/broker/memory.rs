@@ -1,21 +1,21 @@
-use std::collections::HashMap;
 use async_trait::async_trait;
+use std::collections::HashMap;
 use tokio::sync::Mutex;
 use uuid::Uuid;
 
-use crate::core::{Task, TaskError};
 use super::traits::Broker;
+use crate::core::{Task, TaskError};
 
 pub struct MemoryBroker {
     tasks: Mutex<HashMap<Uuid, Task>>,
-    queue: Mutex<Vec<Uuid>>
+    queue: Mutex<Vec<Uuid>>,
 }
 
 impl MemoryBroker {
     pub fn new() -> Self {
         MemoryBroker {
             tasks: Mutex::new(HashMap::new()),
-            queue: Mutex::new(Vec::new())
+            queue: Mutex::new(Vec::new()),
         }
     }
 }
@@ -52,4 +52,3 @@ impl Broker for MemoryBroker {
         Ok(())
     }
 }
-

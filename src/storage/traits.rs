@@ -1,7 +1,7 @@
 // src/storage/traits.rs
+use crate::core::{Task, TaskError};
 use async_trait::async_trait;
 use uuid::Uuid;
-use crate::core::{Task, TaskError};
 
 #[async_trait]
 pub trait Storage: Send + Sync {

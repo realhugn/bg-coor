@@ -18,10 +18,10 @@ pub struct WorkerPool {
 
 impl WorkerPool {
     pub fn new(
-        broker: Arc<dyn Broker>, 
+        broker: Arc<dyn Broker>,
         storage: Arc<dyn Storage>,
         registry: Arc<TaskRegistry>,
-        concurrency: usize
+        concurrency: usize,
     ) -> Self {
         let (shutdown_tx, _) = broadcast::channel(concurrency);
 
@@ -36,10 +36,9 @@ impl WorkerPool {
     }
 
     pub async fn start(&mut self) -> Result<(), TaskError> {
-
         for _ in 0..self.concurrency {
             let worker = self.spawn_worker(
-                Arc::clone(&self.broker), 
+                Arc::clone(&self.broker),
                 Arc::clone(&self.storage),
                 Arc::clone(&self.registry),
             );
@@ -92,7 +91,7 @@ impl WorkerPool {
     }
 
     /// Graceful shutdown of worker pool
-    pub async fn shutdown(&mut self) -> Result<(), Box<dyn Error>>{
+    pub async fn shutdown(&mut self) -> Result<(), Box<dyn Error>> {
         // Send shutdown signal to all workers
         let _ = self.shutdown_tx.send(());
 

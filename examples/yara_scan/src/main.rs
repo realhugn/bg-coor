@@ -64,13 +64,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         json!(yara_rule),
     ];
 
-    let signature = serde_json::to_vec(&bg_coor::core::TaskSignature {
+    let signature = bg_coor::core::TaskSignature {
         name: "yara_scan".to_string(),
         args,
         kwargs: Default::default(),
-    })?;
+    };
     
-    let task_id = task_manager.enqueue_task("yara_scan", signature, 3).await?;
+    let task_id = task_manager.enqueue_task(signature, 3).await?;
 
 
     println!("Task ID: {}", task_id);

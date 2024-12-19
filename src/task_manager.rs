@@ -3,8 +3,8 @@ use std::sync::Arc;
 use uuid::Uuid;
 
 use crate::broker::memory::MemoryBroker;
-use crate::broker::traits::Broker; 
-use crate::core::{Task, TaskError};
+use crate::broker::traits::Broker;
+use crate::core::{Task, TaskError, TaskSignature};
 use crate::storage::{MemoryStorage, Storage};
 use crate::worker::pool::WorkerPool;
 use crate::worker::registry::{TaskHandler, TaskRegistry};
@@ -40,7 +40,10 @@ impl TaskManager {
     }
 
     pub async fn shutdown(&mut self) -> Result<(), TaskError> {
-        self.pool.shutdown().await.map_err(|e| TaskError::ShutdownError(e.to_string()))
+        self.pool
+            .shutdown()
+            .await
+            .map_err(|e| TaskError::ShutdownError(e.to_string()))
     }
 
     pub fn register_handler<H>(&self, name: &str, handler: H) -> Result<(), TaskError>
@@ -50,8 +53,14 @@ impl TaskManager {
         self.registry.register(name, handler)
     }
 
-    pub async fn enqueue_task(&self, name: &str, payload: Vec<u8>, max_retries: u32) -> Result<Uuid, TaskError> {
-        let task = Task::new(name.to_string(), payload, max_retries);
+    pub async fn enqueue_task(
+        &self,
+        signature: TaskSignature,
+        max_retries: u32,
+    ) -> Result<Uuid, TaskError> {
+        let payload = signature.to_bytes();
+
+        let task = Task::new(signature.name.to_string(), payload, max_retries);
         self.broker.push(&task).await?;
 
         Ok(task.id)

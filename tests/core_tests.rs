@@ -1,4 +1,4 @@
-use bg_coor::core::{Task, TaskStatus, TaskError};
+use bg_coor::core::{Task, TaskError, TaskStatus};
 use chrono::Utc;
 
 #[test]
@@ -18,15 +18,15 @@ fn test_task_creation() {
 #[test]
 fn test_task_status_transitions() {
     let mut task = Task::new("test".to_string(), vec![], 3);
-    
+
     assert_eq!(task.status(), &TaskStatus::Pending);
-    
+
     task.set_status(TaskStatus::Running);
     assert_eq!(task.status(), &TaskStatus::Running);
-    
+
     task.set_status(TaskStatus::Completed);
     assert_eq!(task.status(), &TaskStatus::Completed);
-    
+
     task.set_status(TaskStatus::Failed("error".to_string()));
     match task.status() {
         TaskStatus::Failed(msg) => assert_eq!(msg, "error"),
@@ -39,7 +39,7 @@ fn test_task_serialization() {
     let task = Task::new("test".to_string(), vec![1, 2, 3], 3);
     let serialized = serde_json::to_string(&task).unwrap();
     let deserialized: Task = serde_json::from_str(&serialized).unwrap();
-    
+
     assert_eq!(task.id(), deserialized.id());
     assert_eq!(task.status(), deserialized.status());
 }

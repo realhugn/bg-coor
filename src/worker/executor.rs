@@ -1,8 +1,8 @@
-use std::sync::Arc;
 use async_trait::async_trait;
+use std::sync::Arc;
 
-use crate::core::{Task, TaskStatus, TaskError, TaskSignature};
 use crate::broker::traits::Broker;
+use crate::core::{Task, TaskError, TaskSignature, TaskStatus};
 use crate::storage::Storage;
 
 use super::registry::{TaskHandler, TaskRegistry};
@@ -14,7 +14,7 @@ pub trait Middleware: Send + Sync {
 }
 
 pub struct Executor {
-    broker:  Arc<dyn Broker>,
+    broker: Arc<dyn Broker>,
     storage: Arc<dyn Storage>,
     registry: Arc<TaskRegistry>,
     middlewares: Vec<Box<dyn Middleware>>,
@@ -24,7 +24,7 @@ impl Executor {
     pub fn new(
         broker: Arc<dyn Broker>,
         storage: Arc<dyn Storage>,
-        registry: Arc<TaskRegistry>, 
+        registry: Arc<TaskRegistry>,
     ) -> Self {
         Executor {
             broker,
@@ -43,9 +43,7 @@ impl Executor {
         self.storage.update_task(&task).await?;
         let handler = match self.registry.get(&task.name())? {
             Some(h) => h,
-            None => {
-                return Err(TaskError::HandlerNotFound(task.name().to_string()))
-            },
+            None => return Err(TaskError::HandlerNotFound(task.name().to_string())),
         };
 
         let result = self.process_task(&task, handler.as_ref()).await;
@@ -72,12 +70,12 @@ impl Executor {
     }
 
     async fn process_task(
-        &self, 
+        &self,
         task: &Task,
         handler: &dyn TaskHandler,
     ) -> Result<Vec<u8>, TaskError> {
         let signature: TaskSignature = serde_json::from_slice(&task.payload())?;
-        
+
         if signature.name != task.name() {
             return Err(TaskError::InvalidSignature);
         }

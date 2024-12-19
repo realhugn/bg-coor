@@ -1,7 +1,10 @@
-use std::{collections::HashMap, sync::{Arc, RwLock, TryLockError}};
+use std::{
+    collections::HashMap,
+    sync::{Arc, RwLock, TryLockError},
+};
 
-use async_trait::async_trait;
 use crate::core::TaskError;
+use async_trait::async_trait;
 
 #[async_trait]
 pub trait TaskHandler: Send + Sync {
@@ -30,26 +33,26 @@ impl TaskRegistry {
         match self.handlers.try_write() {
             Ok(mut handlers) => {
                 handlers.insert(name.to_string(), Arc::new(handler));
-                return Ok(())
+                return Ok(());
             }
-            Err(TryLockError::WouldBlock) => {
-                Err(TaskError::RegistryLocked("Failed to acquire write lock".into()))
-            }
-            Err(TryLockError::Poisoned(_)) => {
-                Err(TaskError::RegistryLocked("Registry lock is poisoned".into()))
-            }
+            Err(TryLockError::WouldBlock) => Err(TaskError::RegistryLocked(
+                "Failed to acquire write lock".into(),
+            )),
+            Err(TryLockError::Poisoned(_)) => Err(TaskError::RegistryLocked(
+                "Registry lock is poisoned".into(),
+            )),
         }
     }
 
-    pub fn get(&self, name: &str) -> Result<Option<Arc<dyn TaskHandler<>>>, TaskError> {
+    pub fn get(&self, name: &str) -> Result<Option<Arc<dyn TaskHandler>>, TaskError> {
         match self.handlers.try_read() {
             Ok(handlers) => Ok(handlers.get(name).map(Arc::clone)),
-            Err(TryLockError::WouldBlock) => {
-                Err(TaskError::RegistryLocked("Failed to acquire read lock".into()))
-            }
-            Err(TryLockError::Poisoned(_)) => {
-                Err(TaskError::RegistryLocked("Registry lock is poisoned".into()))
-            }
+            Err(TryLockError::WouldBlock) => Err(TaskError::RegistryLocked(
+                "Failed to acquire read lock".into(),
+            )),
+            Err(TryLockError::Poisoned(_)) => Err(TaskError::RegistryLocked(
+                "Registry lock is poisoned".into(),
+            )),
         }
     }
 }

@@ -1,5 +1,5 @@
-use async_trait::async_trait;
 use crate::core::{Task, TaskError};
+use async_trait::async_trait;
 
 #[async_trait]
 pub trait Broker: Send + Sync {

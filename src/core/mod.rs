@@ -2,4 +2,4 @@ mod error;
 mod task;
 
 pub use error::TaskError;
-pub use task::{Task, TaskStatus, TaskSignature};
+pub use task::{Task, TaskSignature, TaskStatus};
