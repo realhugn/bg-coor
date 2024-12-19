@@ -43,9 +43,13 @@ impl TaskManagerBuilder {
 
     pub fn build(self) -> TaskManager {
         let broker = self.broker.unwrap_or_else(|| Arc::new(MemoryBroker::new()));
-        let storage = self.storage.unwrap_or_else(|| Arc::new(MemoryStorage::new()));
-        let registry = self.registry.unwrap_or_else(|| Arc::new(TaskRegistry::new()));
-        
+        let storage = self
+            .storage
+            .unwrap_or_else(|| Arc::new(MemoryStorage::new()));
+        let registry = self
+            .registry
+            .unwrap_or_else(|| Arc::new(TaskRegistry::new()));
+
         let pool = WorkerPool::new(
             broker.clone(),
             storage.clone(),
@@ -55,13 +59,12 @@ impl TaskManagerBuilder {
 
         TaskManager {
             broker,
-            storage, 
+            storage,
             registry,
             pool,
         }
     }
 }
-
 
 pub struct TaskManager {
     broker: Arc<dyn Broker>,
