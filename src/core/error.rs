@@ -31,4 +31,7 @@ pub enum TaskError {
 
     #[error("Invalid argument: {0}")]
     InvalidArgument(String),
+
+    #[error("Other error: {0}")]
+    Other(String),
 }

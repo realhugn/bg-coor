@@ -1,0 +1,11 @@
+[package]
+name = "yara_scan_example"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bg-coor = { path = "../.." }
+yara = "0.29.0"
+async-trait = "0.1"
+serde_json = "1.0"
+tokio = { version = "1.0", features = ["full"] }
