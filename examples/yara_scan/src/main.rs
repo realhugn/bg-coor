@@ -46,7 +46,7 @@ impl TaskHandler for YaraScanTaskHandler {
 // Usage example
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let mut task_manager = TaskManager::new(1);
+    let mut task_manager = TaskManager::builder(2).build();
     task_manager.register_handler("yara_scan", YaraScanTaskHandler)?;
     task_manager.start().await?;
 

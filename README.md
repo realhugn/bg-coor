@@ -67,7 +67,7 @@ impl TaskHandler for AddTask {
 
 #[tokio::main]
 async fn main() -> Result<(), TaskError> {
-    let mut manager = TaskManager::new(2);
+    let mut manager = TaskManager::builder(2).build();
     manager.register_handler("add", AddTask)?;
 
     manager.start().await?;
