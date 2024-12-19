@@ -41,7 +41,7 @@ impl Executor {
     pub async fn execute_task(&self, mut task: Task) -> Result<(), TaskError> {
         task.set_status(TaskStatus::Running);
         self.storage.update_task(&task).await?;
-        let handler = match self.registry.get(&task.name())? {
+        let handler = match self.registry.get(task.name())? {
             Some(h) => h,
             None => return Err(TaskError::HandlerNotFound(task.name().to_string())),
         };
@@ -74,7 +74,7 @@ impl Executor {
         task: &Task,
         handler: &dyn TaskHandler,
     ) -> Result<Vec<u8>, TaskError> {
-        let signature: TaskSignature = serde_json::from_slice(&task.payload())?;
+        let signature: TaskSignature = serde_json::from_slice(task.payload())?;
 
         if signature.name != task.name() {
             return Err(TaskError::InvalidSignature);

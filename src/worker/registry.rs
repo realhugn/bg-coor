@@ -33,7 +33,7 @@ impl TaskRegistry {
         match self.handlers.try_write() {
             Ok(mut handlers) => {
                 handlers.insert(name.to_string(), Arc::new(handler));
-                return Ok(());
+                Ok(())
             }
             Err(TryLockError::WouldBlock) => Err(TaskError::RegistryLocked(
                 "Failed to acquire write lock".into(),
@@ -54,5 +54,11 @@ impl TaskRegistry {
                 "Registry lock is poisoned".into(),
             )),
         }
+    }
+}
+
+impl Default for TaskRegistry {
+    fn default() -> Self {
+        Self::new()
     }
 }

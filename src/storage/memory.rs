@@ -18,6 +18,12 @@ impl MemoryStorage {
     }
 }
 
+impl Default for MemoryStorage {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 #[async_trait]
 impl Storage for MemoryStorage {
     async fn store_task(&self, task: &Task) -> Result<(), TaskError> {

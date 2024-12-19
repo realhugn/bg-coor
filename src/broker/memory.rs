@@ -20,6 +20,12 @@ impl MemoryBroker {
     }
 }
 
+impl Default for MemoryBroker {
+    fn default() -> Self {
+        MemoryBroker::new()
+    }
+}
+
 #[async_trait]
 impl Broker for MemoryBroker {
     async fn push(&self, task: &Task) -> Result<(), TaskError> {
