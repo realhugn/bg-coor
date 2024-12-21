@@ -1,38 +1,11 @@
-# bg-coor
-**bg-coor** is a background task coordination library for Rust
-
-## Features
-
-Current features include:
-
-- Asynchronous task processing using Tokio
-- In-memory task broker and storage implementations
-- Configurable worker pools with concurrent task execution
-- JSON-based task signatures for flexible payload handling
-- Thread-safe task registry with dynamic handler registration
-
-## Architecture
-
-The system consists of several core components:
-
-- **Task**: Core unit of work with unique ID, payload, and status tracking
-- **Broker**: Handles task queue management and distribution
-- **Storage**: Manages task persistence and state
-- **Worker Pool**: Manages concurrent task execution
-- **Task Registry**: Maps task names to their handlers
-- **Executor**: Executes individual tasks with error handling and retries
-
-## Usage
-
-Basic example:
-
-```rust
-use std::{collections::HashMap, time::Duration};
-
 use async_trait::async_trait;
-use bg_coor::{core::TaskError, task_manager::TaskManager, worker::registry::TaskHandler};
+use bg_coor::{
+    broker::redis::RedisBroker, core::TaskError, storage::RedisStorage, task_manager::TaskManager,
+    worker::registry::TaskHandler,
+};
 use serde_json::{json, Value};
-use tokio::time::sleep;
+use std::{collections::HashMap, time::Duration};
+use tokio::{self, time::sleep};
 
 pub struct AddTask;
 
@@ -66,13 +39,22 @@ impl TaskHandler for AddTask {
 }
 
 #[tokio::main]
-async fn main() -> Result<(), TaskError> {
-    let mut manager = TaskManager::builder(2).build();
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // Initialize Redis connections
+    let redis_url = "redis://127.0.0.1:6379";
+    let broker = RedisBroker::new(redis_url, "tasks_queue_simple_usage")?;
+    let storage = RedisStorage::new(redis_url, "tasks_storage_simple_usage")?;
+
+    // Create TaskManager instance
+    let mut manager = TaskManager::builder(1)
+        .with_broker(broker)
+        .with_storage(storage)
+        .build();
+
     manager.register_handler("add", AddTask)?;
 
     manager.start().await?;
 
-    // Create task signature
     let signature = bg_coor::core::TaskSignature {
         name: "add".to_string(),
         args: vec![json!(5), json!(3)],
@@ -102,19 +84,7 @@ async fn main() -> Result<(), TaskError> {
         }
     }
 
-    manager.shutdown().await
+    manager.shutdown().await?;
+
+    Ok(())
 }
-```
-## Roadmap
-Future development plans:
-- [x] Implement a task manager wrapper to simplify lib usage.
-- [ ] Persistent storage backends (Redis, PostgreSQL)
-- [ ] Distributed broker implementations
-- [ ] Task scheduling with cron expressions
-- [ ] Task dependencies and workflow support
-- [ ] Web interface for task monitoring
-- [ ] Metrics and monitoring
-- [ ] Task result serialization formats
-- [ ] Dead letter queue for failed tasks
-- [ ] Task prioritization
-- [ ] Rate limiting and backpressure
