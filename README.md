@@ -1,5 +1,5 @@
 # bg-coor
-A distributed background task processing system written in Rust, focused on reliability and ease of use.
+**bg-coor** is a background task coordination library for Rust
 
 ## Features
 
