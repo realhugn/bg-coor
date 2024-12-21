@@ -34,4 +34,7 @@ pub enum TaskError {
 
     #[error("Other error: {0}")]
     Other(String),
+
+    #[error("Redis error: {0}")]
+    RedisError(#[from] redis::RedisError),
 }
